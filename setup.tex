@@ -1,0 +1,173 @@
+\usepackage[landscape]{geometry}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\usepackage{amssymb,amsmath,amsthm,amsfonts,mathtools}
+\usepackage{multicol,multirow}
+\usepackage{enumitem}
+\usepackage[explicit]{titlesec}
+\usepackage[many]{tcolorbox}
+\usepackage{wallpaper}
+\usepackage{fancyhdr} 
+\usepackage{tikz}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{makecell}
+\usepackage{nicefrac,xfrac}
+\usepackage{bm}
+\usepackage{wrapfig}
+\usepackage{caption}
+\usepackage{hyperref}
+% \captionsetup[figure]{name=Fig.}
+
+\geometry{top=16pt,left=15pt,right=15pt,bottom=15pt, % margins
+          includehead=false,          % header out of text body
+          headheight =10pt,           % header height
+          headsep = 4pt,              % header seperation
+          footskip=10pt}
+\linespread{.5}
+\setlist{nosep}
+
+% Define header
+\fancyhf{}
+\pagestyle{fancy}
+\lhead{\textbf{Model Predictive Control FS26}}
+\rhead{\texttt{A. Bernasconi, abernasconi@student.ethz.ch | F. Frigerio, ffrigerio@student.ethz.ch | M. Dal Bò, mdalbo@student.ethz.ch}}
+\cfoot{\textit{Page \thepage}}
+\setcounter{secnumdepth}{0}
+
+% Define new length
+\newlength{\titlesep}
+\setlength{\titlesep}{3pt}
+
+% Define whitespace command
+\newcommand{\whitespace}[1][4pt]{\titleline[c]{\color{white}\rule{2\titlesep+\linewidth}{#1}}}
+
+% Define section
+\titleformat{\section}[display]{\large\bfseries}{}{0pt}{%
+	\vspace{4pt+\baselineskip+5pt}	% Cancels second vspace
+	\vspace*{-4pt-\baselineskip-5pt} % if not at beginning of page
+	\begin{tcolorbox}[
+		arc=0pt,
+		boxsep=0pt,
+		boxrule=0pt,
+		toprule=4pt,
+		top=4pt,
+		bottom=4pt,
+		middle=0pt,
+		left=\titlesep,
+		right=\titlesep,
+		nobeforeafter,
+		before skip = 0pt,
+		leftright skip=-\titlesep,
+		after skip=-\parskip-\baselineskip-2pt,
+		colframe=white,
+		colback=white!30!black
+		]\color{white}#1
+	\end{tcolorbox}%
+}
+
+\makeatother
+
+% Define  subsection
+\titleformat{\subsection}[display]{\large\bfseries}{}{0pt}{%
+	\vspace{2pt+\baselineskip+5pt}	% Cancels second vspace
+	\vspace*{-2pt-\baselineskip-5pt} % if not at beginning of page
+	\begin{tcolorbox}[
+		arc=0pt,
+		boxsep=0pt,
+		boxrule=0pt,
+		toprule=2pt,
+		top=3pt,
+		bottom=3pt,
+		middle=0pt,
+		left=\titlesep,
+		right=\titlesep,
+		nobeforeafter,
+		before skip = 0pt,
+		leftright skip=-\titlesep,
+        after skip=-\parskip-\baselineskip-1pt,
+		colframe=white,
+		colback=white!60!black
+		]#1
+	\end{tcolorbox}%
+}
+      
+% Define subsubsection
+\titleformat{\subsubsection}[display]{\normalsize\bfseries}{}{0pt}{%
+	\begin{tcolorbox}[
+		arc=0pt,
+		boxsep=0pt,
+		boxrule=0pt,
+		top=3pt,
+		bottom=3pt,
+		middle=0pt,
+		left=\titlesep,
+		right=\titlesep,
+		nobeforeafter,
+		leftright skip=-\titlesep,
+        after skip=-\parskip-\baselineskip-1pt,
+		colframe=white,
+		colback=white!85!black
+		]#1
+	\end{tcolorbox}%
+}
+
+% Define spacings
+\titlespacing{\section}
+  {0pt}{2pt}{0pt}
+\titlespacing{\subsection}
+  {0pt}{.5pt}{0pt}
+\titlespacing{\subsubsection}
+  {0pt}{0pt}{0pt}
+
+% Set sans-serif
+\renewcommand{\familydefault}{\sfdefault}
+
+% Define column-sep
+\raggedcolumns
+\setlength{\columnsep}{17pt}
+
+% Renew sizes
+\renewcommand{\large}{\normalsize}
+\renewcommand{\normalsize}{\small}
+\renewcommand{\small}{\footnotesize}
+% Make arrow symbols safe to use in text mode too
+\let\originalrightarrow\rightarrow
+\renewcommand{\rightarrow}{\ensuremath{\originalrightarrow}}
+\let\originalRightarrow\Rightarrow
+\renewcommand{\Rightarrow}{\ensuremath{\originalRightarrow}}
+\let\originalLeftrightarrow\Leftrightarrow
+\renewcommand{\Leftrightarrow}{\ensuremath{\originalLeftrightarrow}}
+
+% Define custom math operators
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\E}{\mathrm{E}}
+\DeclareMathOperator*{\Var}{\mathrm{Var}}
+
+% Define new columntype
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\tcbset{
+  eqbox/.style={
+    colback=white!92!black,
+    colframe=white!60!black,
+    arc=0pt,
+    boxrule=0.5pt,
+    boxsep=0pt,
+    left=1.5mm,
+    right=1.5mm,
+    top=0.2mm,
+    bottom=0.2mm,
+    before skip=0pt,
+    after skip=0pt,
+    before upper={
+      \setlength{\abovedisplayskip}{0pt}%
+      \setlength{\belowdisplayskip}{0pt}%
+      \setlength{\abovedisplayshortskip}{0pt}%
+      \setlength{\belowdisplayshortskip}{0pt}%
+    }
+  }
+}

@@ -1,0 +1,368 @@
+\section{Robust MPC}
+\vspace{0.5em}
+\textbf{Motivation}: MPC relies on a model BUT noise and model inaccuracies can lead to:
+\begin{itemize}
+    \item Constraint violation
+    \item Sub-optimal behavior
+    \item Noise prevents the system to converge to a single point\\
+\end{itemize}
+\textbf{Note}: Possible to incorporate some noise models in the MPC formulation (Hard to solve)\\
+
+
+\subsection{Uncertainty Models}
+\textbf{MPC}: $x(k+1)=g(x(k),u(k))$ \, ; \, \textbf{Reality} $x(k+1)=g(x(k),u(k),w(k);\theta)$ (Noise $\omega(k)$ \& unknown model parameters $\theta$)\\
+\textbf{Uncertain constrained system}:\\
+$x(k+1)=g(x(k),u(k),w(k);\theta),\;x,u\in\mathcal{X,\mathcal{U}}\quad w\in\mathcal{W}\;\quad \theta\in\Theta$\\
+($\mathcal{W},\Theta$) assumed to be compact\\
+\textbf{Goal}: Design control law $u(k)=\kappa(x(k))$ s.t.
+\begin{enumerate}
+    \item Constraint satisfaction: $\{x(k)\}\subset\mathcal{X},\,\{u(k)\}\subset \mathcal{U}$
+    \item Stability: Convergence to a neighborhood around the origin
+    \item Optimization of expected performance
+    \item Maximization of the set $\{x(0)|\text{ Conditions 1-3 satisfied }\}$
+\end{enumerate}
+\rightarrow This requires assumptions about the random values $w$ and $\theta$
+
+\subsection{Robust invariance}
+$\mathcal{O^W}$ is robust positive invariant for the autonomous system $x(k+1)=g(x(k),w(k))$ if:\\
+$x\in\mathcal{O^W}\Rightarrow g(x,w)\in\mathcal{O^W}\quad\forall w\in \mathcal{W}$\\
+\textbf{Robust Pre set}:\\
+Given $\Omega$ and $x(k+1)=g(x(k),w(k))$, the Pre set of $\Omega$ is the set of states that evolve into $\Omega$ in one time step $ \forall w\in\mathcal{W}$:
+$\text{pre}^\mathcal{W}(\Omega):=\{x|\,g(x,w)\in\Omega\quad \forall w\in\mathcal{W}\}$\\
+\subsubsection{Computing Robust Pre-sets for linear systems}
+\textbf{Goal}: E.g. Given $g(x(k),w(k))=Ax(k)+w(k)$ and the set $\Omega:=\{x|\,Fx\leq f\}$\\
+$\text{pre}^\mathcal{W}(\Omega)=\{x|Ax+w\in\Omega,\;\forall w\in\mathcal{W}\}=\{x|FAx+Fw\leq f,\;\forall w\in\mathcal{W}\}$\\
+$=\{x|\,FAx\leq f-\max_{w\in\mathcal{W}}\}=\{x|FAx\leq f-h_\mathcal{W}(F)\}$ ($h_\mathcal{W}$: support function)\\
+Geometric condition for robust invariance:\\
+\textbf{Theorem}: A set $\mathcal{O}^\mathcal{W}$ is a robust positive invariant set iff $\mathcal{O}^\mathcal{W}\subseteq\text{pre}^\mathcal{W}(\mathcal{O}^\mathcal{W})$\\
+$\rightarrow$ The algorithm to compute the robust invariant set is the same as in the nominal case, with $\text{pre}(\Omega)$ replaced by $\text{pre}^{\mathcal{W}}(\Omega)$.\\
+\textbf{Minkowski Sum}: Let $A,\,B$ be subsets of $\mathbb{R}^n$.
+The Minkowski sum is:\\
+$A\oplus B:=\{x+y|\;x\in A,\,y\in B\}$\\
+\textbf{Pontryagin Difference}: Let $A,\,B$ be subsets of $\mathbb{R}^n$. The Pontryagin Difference is:\\
+$A\ominus B:=\{x|\,x+e\in A\;\forall e\in B\}$\\
+
+
+\subsection{Uncertain constrained linear system}
+$x(k+1)=Ax(k)+Bu(k)+w(k)\quad x,u\in\mathcal{X,\mathcal{U}}\quad w\in\mathcal{W}$\\
+\textbf{Goal}: Design control law $u(k)=\kappa(x(k))$ s.t.:\\
+\rightarrow Constraints are satisfied \& System stabilized for all possible disturbances\\
+Def.: $\phi_i(x_0,U,W)$: System's state at time $i$ IF\\
+\rightarrow input $U:=\{u_0\,,\,...\,,\,u_{N-1}\}$ applied \& disturbance $W:=\{w_0\,,\,...\,,\,w_{N-1}\}$ observed
+
+\noindent
+\begin{minipage}{\linewidth}
+  \begin{minipage}[t]{0.48\linewidth}
+    \vspace{0pt}
+    \textbf{Nominal system}:\\
+    \(x(k+1)=Ax(k)+Bu(k)\)\\[-1mm]
+    \scalebox{1}[0.55]{\(\vdots\)}\\[-1mm]
+    \(x_i=A^i x_0+\displaystyle\sum_{j=0}^{i-1}A^jB\,u_{i-1-j}\)
+  \end{minipage}%
+  \hfill
+  \begin{minipage}[t]{0.48\linewidth}
+    \vspace{0pt}
+    \textbf{Uncertain system}:\\
+    \(x(k+1)=Ax(k)+Bu(k)+w(k)\)\\[-1mm]
+    \scalebox{1}[0.55]{\(\vdots\)}\\[-1mm]
+    \(\phi_i=x_i+\displaystyle\sum_{j=0}^{i-1}A^j w_{i-1-j}\)
+  \end{minipage}
+\end{minipage}
+
+\textbf{Defining cost to minimize}:
+Cost is fct. of the disturbance seen:\\
+$J(x_0,U,W):=\sum_{i=0}^{N-1}l(\phi_i(x_0,U,W),u_i)+l_f(\phi_N(x_0,U,W))$\\
+Ways to eliminate the dependency on $W$:\\
+\rightarrow Minimize the expected value, Take the worst case, Take the nominal case (used assumption)\\
+
+
+\subsubsection{Robust constraint satisfaction}
+\textbf{Idea}:Formulate tighter set of constraints s.t. if nominal system meets them \rightarrow then also the uncertain system does. Then do MPC on nominal system.\\
+\textbf{Goal:} Ensure constraints are satisfied for the MPC sequence\\
+$\phi_i(x_0,U,W)=\{x_i+\sum_{j=0}^{i-1}A^jw_{i-1-j}|\;W\in\mathcal{W}^i\}\subseteq\mathcal{X}$\\
+Assumption: $\mathcal{X}=\{x|\,Fx\leq f\}$\\
+$Fx_i+F\sum_{j=0}^{i-1}A^jw_{i-1-j}\leq f\quad\forall W\in\mathcal{W}^i$\\
+$Fx_i\leq f-\max_{W\in\mathcal{W}^i}F\sum_{j=0}^{i-1}A^jw_{i-1-j}=f-h_{\mathcal{W}^i}(F [A^0 \ldots A^{i-1}])$\\
+\Rightarrow \textbf{Tightening of the constraints acting on the nominal system}\\
+\textbf{Terminal state constraint}\\
+Same approach to ensure:
+$\phi_{N}(x_0,U,W)\subseteq\mathcal{X}_f$
+After this: \\\textbf{Nominal $x_i$ satisfies tighter constraints}\rightarrow \textbf{Uncertain state does too!}\\
+$\phi_i(x_0,U,W)=\{x_i+\sum_{j=0}^{i-1}A^jw_{i-1-j}|\;W\in\mathcal{W}^i\}\subseteq\mathcal{X}$\\
+\Rightarrow $\phi_i(x_0,U,W)\in x_i\oplus (\mathcal{W}\oplus A\mathcal{W}\oplus ...\oplus A^{i-1}\mathcal{W})\subseteq\mathcal{X}$\\
+To obtain this: $x_i\in \mathcal{X}\ominus (\mathcal{W}\oplus A\mathcal{W}\oplus ... \oplus A^{i-1}\mathcal{W})=\mathcal{X}\ominus(\bigoplus_{j=0}^{i-1}A^j\mathcal{W})$\\
+$\mathcal{F}_i=\bigoplus_{j=0}^{i-1}A^j\mathcal{W}$: \textbf{Disturbance reachable set} ($\mathcal{F}_{i+1}=A\mathcal{F}_i\oplus\mathcal{W}$)\\
+\textbf{Summary: Robust Open-Loop MPC}\\
+$\min_U\sum_{i=0}^{N-1}l(x_i,u_i)+l_f(x_N)$\\
+subj.to $x_{i+1}=Ax_i+Bu_i$ (Assumption: A is stable)\\
+$x_0=x(k)$ \, , \, $u_i\in\mathcal{U}$\\
+$x_i\in\mathcal{X}\ominus(\mathcal{W}\oplus A\mathcal{W}\oplus...\oplus A^{i-1}\mathcal{W})$\\
+
+$x_N\in\mathcal{X}_f\ominus(\mathcal{W}\oplus A\mathcal{W}\oplus ... \oplus A^{N-1}\mathcal{W})$\\
+$\mathcal{X}_f\subseteq\mathcal{X}$ robust positive invariant set for $x(k+1)=Ax(k)+w(k),\quad w(k)\in\mathcal{W}$\\
+\Rightarrow \textbf{Doing nominal MPC} with \textbf{tighter state constraints!}
+
+
+
+\subsection{Closed-loop predictions}
+\textbf{Goal:} Optimize over a sequence of functions $\{u_0\,,\,\mu_1(\cdot)\,,\,...\,,\,\mu_{N-1}(\cdot)\}$\\
+where $\mu_i(x_i):\mathbb{R}^n\rightarrow\mathbb{R}^m$ is the \textbf{control policy}\\
+For optimization assume a structure on the functions $\mu_i$:
+
+\noindent
+\begin{minipage}{\linewidth}
+\begin{minipage}[t]{0.48\linewidth}
+\textbf{Pre-stabilization}: $\mu_i(x_i)=Kx_i+\nu_i$\\
+$\rightarrow$ Fixed $K$ s.t. $A+BK$ is \textbf{stable}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\textbf{Tube MPC}: $\mu_i(x_i)=\nu_i+K(x_i-\bar{x}_i)$\\
+$\rightarrow$ Fixed $K$ s.t. $A+BK$ is \textbf{stable}\\
+$\rightarrow$ Optimize over $\bar{x}_i$ and $\nu_i$
+\end{minipage}
+\end{minipage}
+
+\subsubsection{Error dynamics}
+\textbf{Main idea}: $x(k+1)=Ax(k)+Bu(k)+w(k)\quad x,u\in\mathcal{X},\mathcal{U}\quad w\in\mathcal{W}$\\
+Separation of the control authority into two parts:
+\begin{enumerate}
+    \item Portion steering the nominal system to the origin:\\
+    $z(k+1)=Az(k)+B\nu(k)$
+    \item A portion compensating for deviations from the nominal system (\textbf{a tracking controller}):\\
+    $u_i=K(x_i-z_i)+\nu_i$ ($K$ stabilizing controller for the nominal system)
+\end{enumerate}
+\Rightarrow $K$ is fixed offline and optimization on nominal inputs $\nu_i$ and nominal trajectory $z_i$\\ 
+\textbf{Error dynamics}:\\
+Error: $e_i=x_i-z_i$ and Feedback: $u_i=\nu_i+K(x_i-z_i)$\\
+\rightarrow Error dynamics: $e_{i+1}=x_{i+1}-z_{i+1}
+=(A+BK)e_i+w_i$.\\
+\textbf{Note:}
+\begin{enumerate}
+    \item Dynamics $(A+BK)$ is \textbf{stable}
+    \item Set $\mathcal{W}$ is bounded
+\end{enumerate}
+\rightarrow There is set $\varepsilon$: in which $e$ is always contained\\
+\textbf{Goal: Bound maximum error -} 
+\textbf{Uncertain state evolution}: $e_{i+1}=A_Ke_i+w_i,\quad e_0=0$\\
+$e_i=\sum_{j=0}^{i-1}A^{j}w_{i-1-j}$\\
+Set containing all possible states $e_i$:
+$\mathcal{F}_i=\mathcal{W}\oplus...\oplus A^{i-1}\mathcal{W}=\bigoplus_{j=0}^{i-1}A_K^{j}\mathcal{W},\quad \mathcal{F}_0=\{0\}$\\
+\textbf{Minimum robust invariant set (mRPI)}:\\
+$\mathcal{F}_\infty=\bigoplus_{j=0}^\infty A_K^j\mathcal{W},\quad \mathcal{F}_0:=\{0\}$
+(Insert algorithm for minimal robust invariant set)\\
+\textbf{From error bounds to robust MPC - Two variants}:\\
+Error dynamics: $e_{i+1}=(A+BK)e_i+w_i=A_Ke_i+w_i\quad w_i\in\mathcal{W}$
+\begin{enumerate}
+    \item Disturbance reachable sets (DRS):\\
+    $e_i\in\mathcal{F}_i=\bigoplus_{j=0}^{i-1}A_K^j\mathcal{W},\quad \text{if } e_0=0 $
+    \rightarrow \textbf{Constraint tightening MPC}
+    \item Robust positively invariant set (RPI):
+    $e_i\in\varepsilon\Rightarrow e_{i+1}\in\varepsilon$\\
+    for any $e_0\in \varepsilon \rightarrow e_i\in\varepsilon$
+    \rightarrow \textbf{Tube MPC}
+\end{enumerate}
+
+
+
+\subsection{Robust Constraint-tightening MPC}
+\textbf{Noisy system trajectory}:\\
+Given nominal trajectory $z_i$ the noisy system trajectory behaves as follows:\\
+$x_i=z_i+e_i$. Don't know the magnitude of the error BUT it will be in the set $\mathcal{F}_i=\bigoplus_{j=0}^{i-1}A_K^j\mathcal{W},\quad \mathcal{F}_0:=\{0\}$,
+$\quad x_i\in z_i\oplus \mathcal{F}_i=\{z_i+e_i|\;e_i\in\mathcal{F}_i\}$\\
+
+\textbf{Constraint tightening - Disturbance reachable sets:}\\
+\textbf{Goal:} $x_i,\,u_i\in\mathcal{X}\times\mathcal{U}\quad\forall \{w_0\,,\,...\,,\,w_{i-1}\}\in\mathcal{W}^i$.\\
+To work with the nominal system $z(k+1)=Az(k)+B\nu(k)$ ensuring constraint satisfaction for the noisy sys. $x(k+1)=Ax(k)+Bu(k)+w(k)$\\
+\textbf{Necessary and suff. cond}\\
+$z_i\oplus\mathcal{F}_i\subseteq\mathcal{X}\Leftrightarrow z_i\in\mathcal{X}\ominus\mathcal{F}_i$\\
+$u_i\in\nu_i\oplus K\mathcal{F}_i\subseteq\mathcal{U}\Leftrightarrow \nu_i\in\mathcal{U}\ominus K\mathcal{F}_i$\\
+\begin{tcolorbox}[eqbox]
+\begingroup
+\setlength{\jot}{1pt}
+\[
+\begin{aligned}
+\min_{Z,V}\quad
+& \sum_{i=0}^{N-1} l(z_i,\nu_i)+l_f(z_N)\\[-1mm]
+\text{s.t.}\quad
+& z_{i+1}=Az_i+B\nu_i,\quad
+  z_i\in\mathcal{X}\ominus\mathcal{F}_i,\quad
+  \nu_i\in\mathcal{U}\ominus K\mathcal{F}_i,
+  \quad i=0,\ldots,N-1,\\[-1mm]
+& z_N\in\mathcal{X}_f^{\mathrm{ct}}\ominus\mathcal{F}_N,\quad
+  z_0=x(k),
+  \qquad
+  \mathcal{X}_f^{\mathrm{ct}}\text{ robust invariant}.
+\end{aligned}
+\]
+\endgroup
+\end{tcolorbox}
+
+\textbf{Robust Invariance:} If $Kz \in \mathcal{U}$ and $(A+BK)z + w \in \mathcal{X}_f^{\mathrm{ct}} \, \forall w \in \mathcal{W} $. \textit{The problem is recursively feasible}
+
+\subsubsection{Constraint-tightening MPC (Proof sketch)}
+\begin{itemize}[leftmargin=*]
+    \item $\tilde{\nu}_i=\nu_{i+1}^*+K(\tilde{z}_i-z_{i+1}^*),\;i=0\,,...\,,\,N-1,\quad \nu_N^*=Kz_N^*\,,\,z_{N+1}^*=A_Kz_N^*$
+    \item Recursive application:\\
+    $\tilde{z}_i=z_{i+1}^*+A_K^iw(k),\;i=0\,,\,...\,,\,N$\\
+    $\tilde{\nu}_i=\nu_{i+1}^*+KA_K^iw(k),\;i=0\,,\,...\,,\,N-1$\\
+    By induction: $\tilde{z}_{i+1}=A\tilde{z_i}+B\tilde{\nu}_i=A(z_{i+1}^*+A_K^iw(k))+B(\nu_{i+1}^*+K(\tilde{z}-z_{i+1}^*))$\\
+    $=z_{i+2}^*+A_K^{i+1}w(k)$\\
+    \item \textbf{Nested prediction}: $\tilde{z}_i\oplus\mathcal{F}_i=z_{i+1}^*+A_K^iw(k)\oplus\mathcal{F}_i\subseteq z_{i+1}^*\oplus A_K^i\mathcal{W}\oplus\mathcal{F}_i=z_{i+1}^*\oplus\mathcal{F}_{i+1}\subseteq \mathcal{X}$\\
+    \item \textbf{Terminal constraint}: $\tilde{z}_N\oplus\mathcal{F}_N\subseteq z_{N+1}^*\oplus\mathcal{F}_{N+1}=A_K(z_N^*\oplus\mathcal{F}_N)\oplus\mathcal{W}\subseteq A_K\mathcal{X}_f\oplus\mathcal{W}\overset{\mathrm{RPI}}{\subseteq}\mathcal{X}_f$
+\end{itemize}
+
+
+\subsection{Robust Tube MPC}
+\textbf{Tube MPC: Idea}\\
+Ignore noise and plan \textbf{nominal trajectory}
+\rightarrow Bound maximum error with RPI set $\varepsilon$:\\
+$e_i\in\varepsilon\rightarrow e_{i+1}\in\varepsilon$\\
+\textbf{Ideally}: $\varepsilon$ minimum RPI set $\mathcal{F}_\infty=\bigoplus_{j=0}^\infty A^j\mathcal{W}$\\
+Real trajectory stays "nearby" the nominal one: $x_i\in z_i\oplus\varepsilon$ \rightarrow \textbf{plan to apply the controller}  $u_i=K(x_i-z_i)+\nu_i$ \textbf{in the future}\\
+\rightarrow Must ensure that constraints are satisfied by all possible state trajectories $z_i\oplus\varepsilon\subseteq\mathcal{X}$\\
+\textbf{Tube MPC}
+\begin{enumerate}
+    \item \textbf{Compute the set $\varepsilon$ the error will remain inside (Minimum RPI set)}\\
+    Robust positive invariant set (RPI): A set $\mathcal{O}^\mathcal{W}$ is RPI for the system $x(k+1)=g(x(k),w(k))$ if $x\in\mathcal{O}^\mathcal{W}\Rightarrow g(x,w)\in\mathcal{O}^\mathcal{W}\quad\forall w\in\mathcal{W}$\\
+    We want the \textbf{minimum robust invariant set} (smallest set state remains in despite noise)
+    \item \textbf{Modify constraints on the nominal trajectory $\{z_i\}$}\\
+    The noisy system behaves as: $x_i=z_i+e_i$ (error $e_i$ for sure in the set $\varepsilon$)\\
+    $x_i\in z_i\oplus\varepsilon=\{z_i+e_i|\;e_i\in\varepsilon\}$\\
+    \textbf{Constraint tightening}\\
+    Necessary and sufficient condition $z_i\oplus\varepsilon\subseteq\mathcal{X}\Leftrightarrow z_i\in\mathcal{X}\ominus\varepsilon$\\
+    $u_i\in K\varepsilon\oplus\nu_i\subseteq\mathcal{U}\Leftrightarrow\nu_i\in\mathcal{U}\ominus K\varepsilon$\\
+    \textbf{Formulate as convex optimization problem}\\
+    \begin{tcolorbox}[eqbox]
+    Feasible set: $\mathcal{Z}(x_0):=\{Z,V|\;z_{i+1}=Az_i+B\nu_i,\,z_i\in\mathcal{X}\ominus\varepsilon,\,\nu_i\in\mathcal{U}\ominus K\varepsilon,z_N\in\mathcal{X}_f,\,x_0\in z_0\oplus\varepsilon\quad i\in[0\,,\,...\,,\,N-1]\}$\\
+    Cost function: $J(Z,V):=\sum_{i=0}^{N-1}l(z_i,\nu_i)+l_f(z_N)$\\
+    Optimization: $(V^*(x_0),Z^*(x_0))=\text{argmin}_{V,Z}\{J(Z,V)|\,(Z,V)\in\mathcal{Z}(x_0)\}$\\
+    Control law: $\mu_{tube}(x)=K(x-z_0^*(x))+\nu_0^*(x)$
+    \end{tcolorbox}
+\end{enumerate}
+\rightarrow Optimization of the nominal system over \textbf{tightened state and input constraints}\\
+\subsubsection{Proof: Robust constraint satisfaction}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Tube MPC assumptions}\\
+    \begin{enumerate}
+        \item Stage cost is positive definite (only zero at the origin)
+        \item Invariant terminal set for the \textbf{nominal system} with local control law $\kappa_f(z)$\\
+        $Az+B\kappa_f(z)\in\mathcal{X}_f\quad\forall z\in\mathcal{X}_f$\\
+        \textbf{Satisfaction of all tightened state and input constraints in $\mathcal{X}_f$:}\\
+        $\mathcal{X}_f\subseteq\mathcal{X}\ominus\varepsilon$, $\kappa_f(z)\in\mathcal{U}\ominus K\varepsilon\quad \forall z\in\mathcal{X}_f$
+        \item Terminal cost is continuous Lyapunov fct. in $\mathcal{X}_f$\\
+        $l_f(Az+B\kappa_f(z))-l_f(z)\leq-l(z\,,\,\kappa_f(z))\quad\forall z\in\mathcal{X}_f$
+    \end{enumerate}
+    \item
+    \textbf{Robust invariance of Tube MPC} (Theorem):\\
+    $\mathcal{Z}:=\{x|\,\mathcal{Z}(x)\neq 0\}$ is a \textbf{robust invariant set of} \rightarrow $x(k+1)=Ax(k)+B\mu_{tube}(x(k))+w(k)\quad x,u\in\mathcal{X}\times\mathcal{U}$\\
+    Given \textbf{optimal solution for $x(k)$}: $(\{\nu_0^*\,,\,...\,,\,\nu_{N-1}^*\},\{z_0^*\,,\,...\,,\,z_N^*\})$\\
+    State at next time step:
+    $x(k+1)=Ax(k)+BK(x(k)-z^*_0)+B\nu_0^*+w$ ($x(k+1)$ may have may possible values)\\
+    \rightarrow \textbf{Prove existence of feasible solution for all of them}\\
+    By construction: $x(k+1)\in z_1^*\oplus \varepsilon\quad \forall \mathcal{W}$\\
+    As for standard MPC the sequence:\\
+    $(\{\nu_1^*\,,\,...\,,\nu_{N-1}^*\,,\,\kappa_f(z_N^*)\}\,,\,\{z_1^*\,,\,...\,,\,z_N^*\,,\,Az_N^*+B\kappa_f(z_N^*)\})$\\\rightarrow \textbf{feasible for all $x(k)$}
+\end{itemize}
+\textbf{Proof: Robust stability of the cl-system}\\
+\textbf{Robust stability of Tube MPC} (Theorem): State $x(k)$ of the system $x(k+1)=Ax(k)+B\mu_{tube}(x(k))+w(k)$ \rightarrow converges in the limit to set $\varepsilon$.\\
+$J^*(z_0^*(x(k)))=\sum_{i=0}^{N-1}l(z_i^*,\nu_i^*)+l_f(z_N^*)$\\
+$J^*(z_0^*(x(k+1)))\leq\sum_{i=1}^Nl(z_i^*,\nu_i^*)+l_f(z_{N+1})$\\
+$=J^*(z_0^*(x(k)))-l(z_0^*,\nu_0^*)-l_f(z_N^*)+l_f(z_{N+1})+l(z_N^*,\kappa_f(z_N^*))$.\\
+\rightarrow $\lim_{k\rightarrow\infty}J^*(z_0^*(x(k)))=0 \Rightarrow \lim_{k\rightarrow\infty}z_0^*(x(k))=0$\\
+\rightarrow $x(k)$ stays within a robust invariant set centered at $z_0^*(x(k)):\lim_{k\rightarrow\infty}\text{dist}(x(k),\varepsilon)=0$
+
+\subsubsection{Summary: Tube MPC}
+
+\begin{tcolorbox}[eqbox]
+\begingroup
+\setlength{\jot}{1pt}
+\[
+\begin{aligned}
+\min_{Z,V}\quad
+& \sum_{i=0}^{N-1} l(z_i,\nu_i)+l_f(z_N)\\[-1mm]
+\text{s.t.}\quad
+& z_{i+1}=Az_i+B\nu_i,\quad
+  z_i\in\mathcal{X}\ominus\mathcal{E},\quad
+  \nu_i\in\mathcal{U}\ominus K\mathcal{E},
+  \quad i=0,\ldots,N-1,\\
+& z_N\in\mathcal{X}_f,\quad
+  x(k)\in z_0\oplus\mathcal{E},\\
+& A_K\mathcal{E}\oplus\mathcal{W}\subseteq\mathcal{E},\quad
+  \mathcal{X}_f\subseteq\mathcal{X}\ominus\mathcal{E},\quad
+  \mathcal{X}_f\text{ Pos. invariant}.
+\end{aligned}
+\]
+\endgroup
+\end{tcolorbox}
+
+\vspace{0.5em}
+
+\textbf{Goal}: \textbf{Splitting inputs in two parts}\\
+1) Steering the nominal system ($\nu$) \, , \,
+2) Compensate for noise ($Ke$)\\
+\textbf{Finally:}Optimize nominal trajectory, s.t. deviations from it within constraints
+\begin{enumerate}
+    \item \textbf{Benefits}
+    \begin{itemize}
+        \item Compute one constraint tightening
+        \item Simple optimization problem
+        \item Same terminal set and cost as nominal MPC
+    \end{itemize}
+    \item \textbf{Cons}
+    \begin{itemize}
+        \item Sub-optimal MPC
+        \item Reduced feasible set when compared to nominal MPC
+    \end{itemize}
+\end{enumerate}
+\textbf{Summary: Robust MPC for uncertain systems}
+\begin{itemize}
+    \item \textbf{Constraint tightening MPC}: Disturbance reachable sets ($\mathcal{F}_k$)\\
+    \Rightarrow \textbf{Nominal MPC with tightened constraints}: $\mathcal{X}\ominus\mathcal{F}_i$, initial state $z_0=x(k)$
+    \item \textbf{Tube-MPC}: Robust positive invariant set ($\varepsilon$)\\
+    \Rightarrow \textbf{Nominal MPC with tightened constraints}: $\mathcal{X}\ominus\varepsilon$, initial state $z_0\in x(k)\oplus\varepsilon$
+\end{itemize}
+\rightarrow RPI $\varepsilon$: increase of complexity of offline design phase\\
+\rightarrow Tube MPC: \textbf{smaller feasible set \& s                     trong stability properties}
+
+
+
+
+
+\subsection{Robustness of nominal MPC}
+\textbf{Goal:} Control noisy system
+$x(k+1)=Ax(k)+Bu(k)+w(k),\quad w\in\mathcal{W}$\\
+\textbf{What happens if one ignores the noise?}\\
+\rightarrow No certainty about success of controller (for some states it could work)\\
+\textbf{What happens to the Lyapunov fct.?}\\
+Optimal cost $J^*(x)$\rightarrow Lyapunov function for the \textbf{nominal system}\\
+$J^*(Ax+Bu^*(x))-J^*(x)\leq-l(x\,,\,u^*(x))$\\
+BUT state at net point in time is:\\
+$x(k+1)=Ax(k)+Bu^*(x(k))+w(k)$\rightarrow still Lyapunov decrease?\\
+\textbf{Assumption:} Optimal cost $J^*$ is Lipschitz continuous\\
+$|J^*(Ax+Bu^*(x)+w)-J^*(Ax+Bu^*(x))|\leq\gamma||Ax+Bu^*(x)+w-(Ax+Bu^*(x))||=\gamma||w||$\\
+Lyapunov decrease bounded as:\\
+$J^*(Ax+Bu^*(x)+w)-J^*(x)$\\
+$=J^*(Ax+Bu^*(x)+w)-J^*(x)-J^*(Ax+Bu^*(x))+J^*(Ax+Bu^*(x))$\\
+$\leq-l(x\,,\,u^*(x))+\gamma||w||$
+\begin{enumerate}
+    \item Amount of decrease grows with $||x||$
+    \item Amount of increase upper bounded by $\max\{||w||\;|\,w\in\mathcal{W}\}$
+\end{enumerate}
+\rightarrow Movement towards the origin until: balance between size of $x$ and $w$\\
+\textbf{Special case when nominal MPC is robust}\\
+Nominal model is linear, cost function $V_N(x\,,\,U)$ is linear or quadratic, sets of constraints are polytopes
+\rightarrow Optimal cost $V_N^*(x)$ is Lipschitz continuous in $\mathcal{X}_N$\\
+\textbf{Input to state stability}\\
+\rightarrow With the above it was shown that the system is \textbf{Input to state stable}: \\Set converges to a set around zero (size determined by the size of the noise)\\
+\textbf{Summary: Nominal MPC for uncertain systems}\\
+\textbf{Idea:} Ignore the noise and hope the controller works!\\
+\begin{itemize}
+    \item \textbf{Benefits}\\
+    \rightarrow Simple
+    \rightarrow No knowledge of $\mathcal{W}$ required
+    \rightarrow Large feasible set (\textbf{BUT it may not work})
+    \item \textbf{Cons}\\
+    \rightarrow Difficult to determine the region of attraction (set of states for which the controller will work)
+    \rightarrow Works for linear systems (for nonlinear sys. only under continuity assumptions)
+\end{itemize}

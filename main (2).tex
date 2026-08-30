@@ -1,0 +1,69 @@
+\documentclass[8pt,landscape,a4paper]{extarticle}
+\input{setup.tex}
+
+% Begin document
+\begin{document}
+
+% Set lengths
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1pt}
+\setlength{\abovedisplayskip}{0pt}
+\setlength{\belowdisplayskip}{0pt}
+\setlength{\abovedisplayshortskip}{0pt}
+\setlength{\belowdisplayshortskip}{0pt}
+
+\begin{multicols*}{3}
+\raggedright
+
+%%%%% Content
+\input{Sections/Introduction}
+\input{Sections/Nominal MPC}
+\input{Sections/Practical_MPC}
+\input{Sections/Robust_MPC}
+\input{Sections/Implementation_Methods}
+
+% ===== Disclaimer =====
+\columnbreak
+\begin{tcolorbox}[
+    colback=white,
+    colframe=red!70!black,
+    arc=2pt,
+    boxrule=1pt,
+    title={\textbf{\color{white}Disclaimer}},
+    colbacktitle=red!70!black,
+    coltitle=white,
+    fonttitle=\normalsize\bfseries,
+    top=8pt, bottom=8pt, left=10pt, right=10pt
+]
+\raggedright
+This summary was created by \textbf{Andrea Bernasconi, Filippo Frigerio}, and \textbf{Mattia Dal Bò} for the lecture \textbf{Model Predictive Control (MPC)}, FS26. It was written with the help of Claude (Anthropic).
+
+\vspace{6pt}
+
+Anyone is free to further develop and publish this summary. To avoid confusion, however, it should be clearly indicated that it is not the original version.
+
+\vspace{6pt}
+
+{\color{red!70!black}\textbf{Note:}} Correctness and completeness cannot be guaranteed. This summary is still quite rough in places, and may not cover all topics discussed in the lecture.
+
+\vspace{6pt}
+
+\textbf{Version:} 1.0
+
+\vspace{4pt}
+
+\textbf{Last updated:} \today
+
+\vspace{4pt}
+
+\textbf{Source \& contributions:} \url{https://github.com/mattia-dalbo/MPC-Cheatsheet-FS26.git}
+
+\vspace{4pt}
+
+\textbf{Found an error?} Please open an issue on GitHub, or contact the authors
+\end{tcolorbox}
+
+\end{multicols*}
+
+
+\end{document}

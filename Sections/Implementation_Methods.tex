@@ -1,0 +1,64 @@
+\section{Implementation methods}
+\vspace{0.5em}
+\textbf{Explicit Solution:}\\
+\textbf{Active set}:
+$I:=\{1\,,\,...\,,\,m\}$\rightarrow set of constraint indices\\
+$A(x):=\{j\in I:\,G_jU^*(x)-E_jx=w_j\}$\\
+$NA(x):=\{j\in I:\,G_jU^*(x)-E_jx<w_j\}$ ($(\cdot)_j:\,j^{th}\text{ row}$)\\
+\textbf{Critical region}:
+$CR_A:=\{x\in\mathcal{X}_N:\,A(x)=A\}$\\
+\textbf{Sequential search}:
+Subdivide into various critical regions $CR(B_j)=\{x|\,A_jx+b_j\leq0\}$\\
+\textbf{Online evaluation: Point location}
+\begin{enumerate}
+    \item Sequential search: For each $j$: if $A_jx+b_j\leq0$\rightarrow $x$ is in region $j$\\
+\textbf{Benefit}: Linear in the number of regions
+\item Logarithmic search: Offline construction of search tree
+\begin{itemize}
+    \item Find hyperplane that separates regions into two equal sized sets 
+    \item repeat for left and right sets
+\end{itemize}
+\textbf{Benefit:} Potentially logarithmic, BUT significant offline processing
+\end{enumerate}
+\textbf{Iterative Optimization Methods}
+\begin{enumerate}
+    \item Unconstrained minimization\\
+    \textbf{Necessary and sufficient condition}: Assume $f$ differentiable at $x^*$. If $f$ convex \rightarrow $x^*$ is a global minimizer iff $\nabla f(x^*)=0$
+    \Rightarrow Unconstrained optimization methods: \textbf{iterative methods for solving $\nabla f(x^*)=0$}
+    \begin{itemize}
+        \item \textbf{Gradient descent}:
+        $x^{i+1}=x^i-h^i\nabla f(x^i)$\\
+        Assumption: $||\nabla f(x)-\nabla f(y)||\leq L||x-y|| \quad\forall x,y\in\mathbb{R}^n$\\
+        \rightarrow Choose constant step size: $h^i=1/L$
+        \item  \textbf{Newton's method}: Minimize $2^{nd}$ order approximation of $f$ at current iterate $x^i$\\
+        \Rightarrow $x^{i+1}=x^i-(\nabla^2f(x^i))^{-1}\nabla f(x^i)=x^i+\Delta x_{nt}$\\
+        \textbf{Note}:$\tilde{f}$ not upper bound on $f$\rightarrow \textbf{Newton step not necessarily descent}\\
+        \rightarrow Use $h^i>0$: $x^{i+1}=x^i-h^i(\nabla^2f(x^i))^{-1}\nabla f(x^i)$\\
+        \rightarrow Find $h^i>0$ s.t. $f(x^i+h^i\Delta x_{nt})<f(x^i)$ (e.g. using \textbf{Line search})
+        
+    \end{itemize}
+    \item Constrained minimization
+    \begin{itemize}
+        \item \textbf{Projected Gradient Method}: $\min f(x) \text{ subj. to }x\in\mathbb{Q}$\\
+        \Rightarrow Incorporate constraints in gradient step: $x^{i+1}=\textcolor{red}{\pi_\mathbb{Q}(\textcolor{black}{x^i-h^i\nabla f(x^i)})}$ with $\pi_\mathbb{Q}(y):=\text{argmin}_x\frac{1}{2}||x-y||_2^2\text{ s.t. }x\in \mathbb{Q}$
+        \item \textbf{Interior-Point Methods}: $\min f(x)\text{ s.t. }g_i(x)\leq0,\;i=1, \ldots ,m\;;Cx=d$\\
+        \textbf{Idea:} Iteratively solve \textbf{relaxed KKT system}\\
+        $\nabla f(x^*)+\sum_{i=1}^m\lambda_i^*\nabla g_i(x^*)+C^T\nu^*=0,\;Cx^*=d,$\;\\$g_i(x^*)+s_i^*=0,\;\lambda_i^*g_i(x^*)=-\kappa,\;\lambda_i^*,s_i^*\geq0$\\
+        \textbf{At each iteration: Linearization of the above}\\
+    \end{itemize}
+    $\begin{bmatrix}
+            H(x,\lambda)&C^T&G(x)^T&0\\C&0&0&0\\
+            G(x)&0&0&I\\0&0&S&\Lambda
+        \end{bmatrix}\begin{bmatrix}
+            \Delta x\\\Delta \nu\\\Delta\lambda\\\Delta s
+        \end{bmatrix}=\begin{bmatrix}
+            -\nabla f(x)-C^T\nu-G(x)^T\lambda\\-Cx+d\\-(g(x)+s)\\-S\lambda+\textcolor{green}{\nu}
+        \end{bmatrix}$\\
+        $S=\text{diag}(s_1\,,\,...\,,\,s_m)$, $\Lambda=\text{diag}(\lambda_1\,,\,...\,,\,\lambda_m)$, $H(x,\lambda)=\nabla^2f(x)+\sum_{i=1}^m\lambda_i\nabla^2g_i(x)$, $G(x)^T=\begin{bmatrix}
+            \nabla g_0(x)&...&\nabla g_m(x)
+        \end{bmatrix}$\\
+        Vector $\textcolor{green}{\nu}\in\mathbb{R}^m$: generation of \textbf{multiple resulting directions} $\Delta[x\,,\,\nu\,,\,\lambda\,,\,s](\textcolor{green}{\nu})$:
+        $\nu=0$:\textbf{ pure Newton direction}, $\nu=\kappa\textbf{1}$: \textbf{Centering direction}, approach central path\\
+        \Rightarrow Linear combination via \textbf{cenetring parameter} $\sigma\in(0,1)$ leads to \textbf{fast convergence}
+    
+\end{enumerate}
